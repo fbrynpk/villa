@@ -134,9 +134,6 @@ assets/
 checkpoints/
 data/
 docmnist/
-preprocess/
-villa/
-villa.egg-info/
 
 # Dataset
 RPN_MIMIC/images/
@@ -145,3 +142,11 @@ RPN_MIMIC/mimic-cxr-reports-preprocessed-villa/
 *.dcm
 *.pth
 *.yaml
+*.png
+*.txt
+
+/mimic-cxr
+/pretrained
+/Xray
+.env_example
+.flake8

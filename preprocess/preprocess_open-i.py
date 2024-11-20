@@ -13,6 +13,9 @@ import torch
 from medclip import MedCLIPVisionModel
 from PIL import Image
 from rich import print
+
+# from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 from torchvision.ops import roi_align
 from tqdm.auto import tqdm
 from transformers import AutoModel, AutoTokenizer
@@ -23,9 +26,7 @@ root = pyrootutils.setup_root(__file__, dotenv=True, pythonpath=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
 
-ann = pd.read_feather(
-    "C:/Users/DryLab/Desktop/ViLLA/data/mimic-cxr/annotations.feather"
-)
+ann = pd.read_feather("C:/Users/DryLab/Desktop/ViLLA/data/open-i/annotations.feather")
 
 # Split ann into train and val
 train_ann = ann[ann["split"] == "train"]
@@ -33,56 +34,56 @@ val_ann = ann[ann["split"] == "val"]
 
 # Define attributes
 ATTRIBUTES = [
-    "atelectasis",
-    "normal limits",
-    "opacity",
-    "small effusion",
-    "effusion",
-    "moderate cardiomegaly",
-    "mild edema",
-    "opacities",
-    "line",
-    "small effusions",
-    "edema",
-    "effusions",
-    "place",
-    "opacification",
-    "mild cardiomegaly",
-    "congestion",
-    "tube",
-    "consolidation",
-    "tip",
-    "endotracheal tube",
     "cardiomegaly",
-    "mild congestion",
-    "moderate effusion",
-    "mild atelectasis",
-    "loss",
-    "pneumonia",
-    "nasogastric tube",
-    "enlargement",
-    "position",
-    "line tip",
-    "minimal atelectasis",
-    "borderline",
-    "surgical clips",
-    "clips",
-    "a - cath",
-    "et tube",
-    "moderate edema",
-    "elevation",
-    "prominence",
-    "calcifications",
-    "emphysema",
-    "pacemaker",
-    "patchy opacity",
-    "picc",
-    "little change",
+    "atelectasis",
+    "opacities",
+    "disease",
+    "opacity",
+    "limits",
+    "normal limits",
+    "granuloma",
     "degenerative changes",
-    "patchy opacities",
-    "pic line",
-    "port",
-    "sternotomy wires",
+    "effusions",
+    "effusion",
+    "emphysema",
+    "changes",
+    "markings",
+    "granulomas",
+    "calcifications",
+    "midline",
+    "density",
+    "tortuosity",
+    "sternotomy",
+    "hiatal hernia",
+    "lymph",
+    "prominence",
+    "deformity",
+    "calcification",
+    "osteophytes",
+    "elevation",
+    "edema",
+    "surgical clips",
+    "congestion",
+    "nodules",
+    "pneumonia",
+    "enlargement",
+    "clips",
+    "hyperexpansion",
+    "scoliosis",
+    "copd",
+    "dextroscoliosis",
+    "calcified granuloma",
+    "eventration",
+    "pneumothorax",
+    "tip",
+    "consolidation",
+    "aeration",
+    "lucency",
+    "ectasia",
+    "deformities",
+    "mild degenerative changes",
+    "loss",
+    "emphysematous changes",
 ]
 
 
@@ -140,6 +141,7 @@ def generate_attribute_embs(out_dir):
     attribute_embeddings = []
     with torch.no_grad():
         for sentence in final_sentences:
+            # Compute sentence embeddings
             sentences = tokenizer(
                 sentence,
                 return_tensors="pt",
@@ -150,7 +152,6 @@ def generate_attribute_embs(out_dir):
 
             sentence_embeddings = model.forward(**sentences)
 
-            # Uncomment if using SBERT
             # sentence_embeddings = model.encode(sentence, convert_to_tensor=True)
 
             # Mean pooling
@@ -269,7 +270,7 @@ def generate_region_embs(out_dir):
             # x = components["fc"](x)
             reg_embs = x
 
-        if len(all_reg_embs) == 10000:
+        if len(all_reg_embs) == 2000:
             all_reg_embs = np.array(all_reg_embs, dtype=object)
             print(f"Shape of all embeddings: {all_reg_embs.shape}")
             np.savez_compressed(out_dir / f"embs_{idx}", all_reg_embs)
